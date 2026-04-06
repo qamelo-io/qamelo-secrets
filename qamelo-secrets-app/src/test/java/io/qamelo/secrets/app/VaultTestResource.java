@@ -7,9 +7,9 @@ import java.util.Map;
 
 public class VaultTestResource implements QuarkusTestResourceLifecycleManager {
 
-    static final String VAULT_TOKEN = "root-test-token";
+    public static final String VAULT_TOKEN = "root-test-token";
 
-    static final VaultContainer<?> VAULT = new VaultContainer<>("hashicorp/vault:1.17.2")
+    public static final VaultContainer<?> VAULT = new VaultContainer<>("hashicorp/vault:1.17.2")
             .withVaultToken(VAULT_TOKEN)
             .withInitCommand("secrets enable -path=kv kv-v2");
 
