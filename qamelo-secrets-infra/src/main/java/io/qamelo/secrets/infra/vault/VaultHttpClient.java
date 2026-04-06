@@ -71,6 +71,17 @@ public class VaultHttpClient {
                 });
     }
 
+    public Uni<HttpResponse<Buffer>> list(String path) {
+        return client.get("/v1/" + path + "?list=true")
+                .putHeader("X-Vault-Token", vaultToken)
+                .send()
+                .invoke(resp -> {
+                    if (LOG.isTraceEnabled()) {
+                        LOG.tracef("LIST /v1/%s -> %d", path, resp.statusCode());
+                    }
+                });
+    }
+
     public Uni<HttpResponse<Buffer>> post(String path, JsonObject body) {
         return client.post("/v1/" + path)
                 .putHeader("X-Vault-Token", vaultToken)
