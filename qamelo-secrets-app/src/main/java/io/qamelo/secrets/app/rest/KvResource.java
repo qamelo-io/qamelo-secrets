@@ -1,5 +1,6 @@
 package io.qamelo.secrets.app.rest;
 
+import io.qamelo.secrets.domain.kv.KvMetadata;
 import io.qamelo.secrets.domain.kv.KvSecret;
 import io.qamelo.secrets.domain.kv.KvWriteResult;
 import io.qamelo.secrets.domain.spi.SecretStore;
@@ -17,6 +18,12 @@ public class KvResource {
 
     @Inject
     SecretStore secretStore;
+
+    @GET
+    @Path("{path: .+}/metadata")
+    public Uni<KvMetadata> readMetadata(@PathParam("path") String path) {
+        return secretStore.readMetadata(path);
+    }
 
     @GET
     @Path("{path: .+}")
