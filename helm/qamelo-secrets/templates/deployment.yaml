@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}
+      containers:
+        - name: qamelo-secrets
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 9002
+              protocol: TCP
+          env:
+            - name: QAMELO_VAULT_URL
+              value: {{ .Values.vault.url | quote }}
+            - name: QAMELO_VAULT_AUTH_METHOD
+              value: {{ .Values.vault.authMethod | quote }}
+            - name: QAMELO_VAULT_AUTH_ROLE
+              value: {{ .Values.vault.authRole | quote }}
+            - name: QAMELO_VAULT_MOUNT_KV
+              value: {{ .Values.vault.mount.kv | quote }}
+            - name: QAMELO_VAULT_MOUNT_PKI
+              value: {{ .Values.vault.mount.pki | quote }}
+            - name: QAMELO_VAULT_MOUNT_TRANSIT
+              value: {{ .Values.vault.mount.transit | quote }}
+            - name: QAMELO_VAULT_MOUNT_SSH
+              value: {{ .Values.vault.mount.ssh | quote }}
+            - name: QAMELO_VAULT_MOUNT_DATABASE
+              value: {{ .Values.vault.mount.database | quote }}
+            - name: QAMELO_INTERNAL_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: qamelo-internal-auth
+                  key: shared-secret
+          readinessProbe:
+            httpGet:
+              path: /q/health/ready
+              port: 9002
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /q/health/live
+              port: 9002
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          resources:
+            requests:
+              memory: {{ .Values.resources.requests.memory }}
+              cpu: {{ .Values.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.resources.limits.memory }}

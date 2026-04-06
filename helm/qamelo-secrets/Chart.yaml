@@ -1,0 +1,6 @@
+apiVersion: v2
+name: qamelo-secrets
+description: Secret broker service for the Qamelo integration platform
+type: application
+version: 0.1.0
+appVersion: "0.1.0-SNAPSHOT"

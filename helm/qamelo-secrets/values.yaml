@@ -1,0 +1,28 @@
+replicaCount: 1
+
+image:
+  repository: localhost:5001/qamelo/qamelo-secrets
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 9002
+
+vault:
+  url: http://vault.qamelo-system:8200
+  authMethod: kubernetes
+  authRole: qamelo-secrets
+  mount:
+    kv: kv
+    pki: pki
+    transit: transit
+    ssh: ssh
+    database: database
+
+resources:
+  requests:
+    memory: 128Mi
+    cpu: 100m
+  limits:
+    memory: 512Mi
