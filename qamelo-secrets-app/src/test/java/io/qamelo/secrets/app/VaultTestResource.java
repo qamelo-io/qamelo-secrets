@@ -11,19 +11,28 @@ public class VaultTestResource implements QuarkusTestResourceLifecycleManager {
 
     static final VaultContainer<?> VAULT = new VaultContainer<>("hashicorp/vault:1.17.2")
             .withVaultToken(VAULT_TOKEN)
-            .withInitCommand("secrets enable -path=kv kv-v2");
+            .withInitCommand(
+                    "secrets enable -path=kv kv-v2",
+                    "secrets enable -path=pki pki",
+                    "secrets enable -path=transit transit",
+                    "secrets enable -path=ssh-client-signer ssh",
+                    "secrets enable -path=database database");
 
     @Override
     public Map<String, String> start() {
         VAULT.start();
-        return Map.of(
-                "qamelo.vault.url", "http://" + VAULT.getHost() + ":" + VAULT.getFirstMappedPort(),
-                "qamelo.vault.auth.method", "token",
-                "qamelo.vault.auth.token", VAULT_TOKEN,
-                "qamelo.vault.mount.kv", "kv",
-                "qamelo.internal.secret", "test-secret",
-                "quarkus.http.auth.proactive", "false"
-        );
+        var props = new java.util.HashMap<String, String>();
+        props.put("qamelo.vault.url", "http://" + VAULT.getHost() + ":" + VAULT.getFirstMappedPort());
+        props.put("qamelo.vault.auth.method", "token");
+        props.put("qamelo.vault.auth.token", VAULT_TOKEN);
+        props.put("qamelo.vault.mount.kv", "kv");
+        props.put("qamelo.vault.mount.pki", "pki");
+        props.put("qamelo.vault.mount.transit", "transit");
+        props.put("qamelo.vault.mount.ssh", "ssh-client-signer");
+        props.put("qamelo.vault.mount.database", "database");
+        props.put("qamelo.internal.secret", "test-secret");
+        props.put("quarkus.http.auth.proactive", "false");
+        return props;
     }
 
     @Override
