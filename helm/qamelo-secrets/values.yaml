@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: localhost:5001/qamelo/qamelo-secrets
+  repository: localhost:5001/qamelo-secrets
   tag: latest
   pullPolicy: IfNotPresent
 
@@ -13,6 +13,7 @@ vault:
   url: http://vault.qamelo-system:8200
   authMethod: kubernetes
   authRole: qamelo-secrets
+  token: ""
   mount:
     kv: kv
     pki: pki

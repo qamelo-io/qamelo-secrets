@@ -30,6 +30,8 @@ spec:
               value: {{ .Values.vault.authMethod | quote }}
             - name: QAMELO_VAULT_AUTH_ROLE
               value: {{ .Values.vault.authRole | quote }}
+            - name: QAMELO_VAULT_TOKEN
+              value: {{ .Values.vault.token | quote }}
             - name: QAMELO_VAULT_MOUNT_KV
               value: {{ .Values.vault.mount.kv | quote }}
             - name: QAMELO_VAULT_MOUNT_PKI
