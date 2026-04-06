@@ -43,12 +43,7 @@ public class DatabaseTestResource implements QuarkusTestResourceLifecycleManager
         String connectionUrl = "postgresql://{{username}}:{{password}}@" + pgIp + ":5432/test?sslmode=disable";
 
         try (HttpClient client = HttpClient.newHttpClient()) {
-            // Enable database secrets engine
-            vaultRequest(client, vaultUrl, token, "PUT",
-                    "/v1/sys/mounts/database",
-                    """
-                    {"type": "database"}
-                    """);
+            // Database engine already enabled by VaultTestResource
 
             // Configure PostgreSQL connection
             vaultRequest(client, vaultUrl, token, "POST",
