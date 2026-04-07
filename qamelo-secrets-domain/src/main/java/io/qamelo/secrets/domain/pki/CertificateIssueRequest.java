@@ -7,5 +7,7 @@ public record CertificateIssueRequest(
         String commonName,
         List<String> altNames,
         List<String> ipSans,
-        String ttl) {
+        String ttl,
+        String csr,
+        String mount) {
 }

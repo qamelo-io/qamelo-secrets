@@ -9,6 +9,7 @@ import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import java.util.List;
 
@@ -23,6 +24,9 @@ public class PkiResource {
     @POST
     @Path("issue")
     public Uni<IssuedCertificate> issue(CertificateIssueRequest request) {
+        if (request.csr() != null && !request.csr().isBlank()) {
+            return certificateStore.signCsr(request);
+        }
         return certificateStore.issue(request);
     }
 
@@ -49,6 +53,16 @@ public class PkiResource {
     public Uni<List<CertificateInfo>> listExpiring(
             @QueryParam("within") @DefaultValue("30d") String within) {
         return certificateStore.listExpiring(within);
+    }
+
+    @GET
+    @Path("crl")
+    @Produces("application/pkix-crl")
+    public Uni<Response> getCrl(@QueryParam("mount") @DefaultValue("pki-internal") String mount) {
+        return certificateStore.getCrl(mount)
+                .map(crlBytes -> Response.ok(crlBytes)
+                        .type("application/pkix-crl")
+                        .build());
     }
 
     public record RevokeRequest(String serialNumber) {

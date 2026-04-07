@@ -35,7 +35,12 @@ public class PkiVaultClient implements CertificateStore {
 
     @Override
     public Uni<IssuedCertificate> issue(CertificateIssueRequest request) {
-        String path = config.mount().pki() + "/issue/" + request.roleName();
+        if (request.csr() != null && !request.csr().isBlank()) {
+            return signCsr(request);
+        }
+
+        String mount = resolveMount(request.mount());
+        String path = mount + "/issue/" + request.roleName();
 
         JsonObject body = new JsonObject()
                 .put("common_name", request.commonName());
@@ -74,6 +79,74 @@ public class PkiVaultClient implements CertificateStore {
 
             return new IssuedCertificate(serialNumber, certificate, privateKey, issuingCa, caChain, expiration);
         });
+    }
+
+    @Override
+    public Uni<IssuedCertificate> signCsr(CertificateIssueRequest request) {
+        String mount = resolveMount(request.mount());
+        String path = mount + "/sign/" + request.roleName();
+
+        JsonObject body = new JsonObject()
+                .put("csr", request.csr());
+
+        if (request.commonName() != null && !request.commonName().isBlank()) {
+            body.put("common_name", request.commonName());
+        }
+        if (request.altNames() != null && !request.altNames().isEmpty()) {
+            body.put("alt_names", String.join(",", request.altNames()));
+        }
+        if (request.ipSans() != null && !request.ipSans().isEmpty()) {
+            body.put("ip_sans", String.join(",", request.ipSans()));
+        }
+        if (request.ttl() != null && !request.ttl().isEmpty()) {
+            body.put("ttl", request.ttl());
+        }
+
+        return vault.post(path, body).map(resp -> {
+            checkVaultError(resp.statusCode(), resp.bodyAsString(), "sign/" + request.roleName());
+
+            JsonObject json = new JsonObject(resp.bodyAsString());
+            JsonObject data = json.getJsonObject("data");
+
+            String serialNumber = data.getString("serial_number");
+            String certificate = data.getString("certificate");
+            String issuingCa = data.getString("issuing_ca");
+
+            String caChain = null;
+            JsonArray caChainArray = data.getJsonArray("ca_chain");
+            if (caChainArray != null && !caChainArray.isEmpty()) {
+                caChain = String.join("\n", caChainArray.stream()
+                        .map(Object::toString)
+                        .toList());
+            }
+
+            long expirationEpoch = data.getLong("expiration", 0L);
+            Instant expiration = Instant.ofEpochSecond(expirationEpoch);
+
+            // No private key in sign response — the requester keeps its own key
+            return new IssuedCertificate(serialNumber, certificate, null, issuingCa, caChain, expiration);
+        });
+    }
+
+    @Override
+    public Uni<byte[]> getCrl(String mount) {
+        String resolvedMount = resolveMount(mount);
+        String path = resolvedMount + "/crl";
+
+        return vault.get(path).map(resp -> {
+            if (resp.statusCode() == 404) {
+                throw new SecretsException(SecretsErrorCode.SECRET_NOT_FOUND,
+                        "CRL not found for mount: " + resolvedMount);
+            }
+            if (resp.statusCode() < 200 || resp.statusCode() >= 300) {
+                checkVaultError(resp.statusCode(), resp.bodyAsString(), "crl");
+            }
+            return resp.body().getBytes();
+        });
+    }
+
+    private String resolveMount(String mount) {
+        return (mount != null && !mount.isBlank()) ? mount : config.mount().pki();
     }
 
     @Override

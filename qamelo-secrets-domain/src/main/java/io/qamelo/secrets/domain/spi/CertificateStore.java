@@ -22,4 +22,16 @@ public interface CertificateStore {
     Uni<CaCertificateResponse> getCaCertificate();
 
     Uni<List<CertificateInfo>> listExpiring(String within);
+
+    /**
+     * Signs an externally-generated CSR using the specified Vault PKI role.
+     * The private key stays with the requester — only the CSR is sent for signing.
+     */
+    Uni<IssuedCertificate> signCsr(CertificateIssueRequest request);
+
+    /**
+     * Returns the CRL (Certificate Revocation List) from the specified PKI mount
+     * as DER-encoded bytes.
+     */
+    Uni<byte[]> getCrl(String mount);
 }
