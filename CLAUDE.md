@@ -18,14 +18,14 @@ Design decisions: https://github.com/qamelo-io/qamelo-docs/blob/main/SECRETS-DES
 |---|---|
 | qamelo-secrets-domain | DTOs, error model, SPI interfaces. Zero Vault imports. |
 | qamelo-secrets-infra | Vault client implementation (Vert.x WebClient), response mapping |
-| qamelo-secrets-app | REST resources, SharedSecretAuthFilter, health check, audit, Quarkus wiring |
+| qamelo-secrets-app | REST resources, MtlsAuthFilter, health check, audit, Quarkus wiring |
 
 ## Architecture
 
 - Hexagonal: domain defines interfaces, infra implements with Vault
 - Stateless broker: no database, no cache, no lease tracking
 - Engine-per-resource REST API at `/api/v1/internal/secrets/*`
-- SharedSecretAuthFilter on all `/api/v1/internal/*` endpoints
+- MtlsAuthFilter (mTLS client-cert validation) on all `/api/v1/internal/*` endpoints
 
 ## SPI Interfaces (domain module)
 
@@ -49,7 +49,7 @@ mvn clean install
 
 - **qamelo-docs** — cross-repo architecture, SECRETS-DESIGN.md, PRD
 - **qamelo-server** — consumes vault path refs at deploy time
-- **qamelo-iam** — SharedSecretAuthFilter pattern origin
+- **qamelo-iam** — MtlsAuthFilter pattern origin
 - **qamelo-infra** — Vault deployment, engine setup, K8s auth
 
 ## Version

@@ -42,11 +42,6 @@ spec:
               value: {{ .Values.vault.mount.ssh | quote }}
             - name: QAMELO_VAULT_MOUNT_DATABASE
               value: {{ .Values.vault.mount.database | quote }}
-            - name: QAMELO_INTERNAL_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: qamelo-internal-auth
-                  key: shared-secret
           readinessProbe:
             httpGet:
               path: /q/health/ready

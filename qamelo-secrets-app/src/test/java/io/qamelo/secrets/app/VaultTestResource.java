@@ -30,7 +30,6 @@ public class VaultTestResource implements QuarkusTestResourceLifecycleManager {
         props.put("qamelo.vault.mount.transit", "transit");
         props.put("qamelo.vault.mount.ssh", "ssh-client-signer");
         props.put("qamelo.vault.mount.database", "database");
-        props.put("qamelo.internal.secret", "test-secret");
         props.put("quarkus.http.auth.proactive", "false");
         return props;
     }
